@@ -37,6 +37,21 @@
    tick, used by the handshake itself (20ms usbdl poll loop). */
 #define PL_UDELAY_ADDR         0x020815ACUL
 
+/* Emergency download entry: prints "emergency download mode(timeout:
+   %ds)", programs the RGU for an unconditional reset and calls
+   mtk_arch_reset, landing in BROM download mode. Used as the escape
+   hatch when an abnormal (aee) boot is detected: on that path the
+   preloader never reaches its tool-handshake call site 0x0205F31C, so
+   the second port cannot appear and chainload would just reboot into
+   the broken boot loop. */
+#define PL_EMERGENCY_DL_FUNC   0x020723A0UL
+#define EMERGENCY_DL_TIMEOUT_S 120UL
+
+/* RGU aee stamp: 0x02078ED8 compares [0x020D262C] against 0xAEEDEAD
+   (ram_console_is_abnormal_boot) to decide the aee path. */
+#define PL_RGU_AEE_STATUS      0x020D262CUL
+#define PL_RGU_AEE_MAGIC       0xAEEDEADUL
+
 /* Defer the second port. As built, the port appears right after USB
    enumeration (~400ms into the handshake) and the tool-listen window
    (w28=0x9C4=2500ms) closes ~2s later -- too fast for host tools to
